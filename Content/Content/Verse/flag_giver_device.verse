@@ -9,27 +9,43 @@ using { /Verse.org/SceneGraph }
 flag_giver_device := class(creative_device):
 
     @editable VolumeTrigger : volume_device = volume_device{}
-    @editable FlagMesh : creative_device = creative_device{}
+    @editable FlagMesh : creative_prop = creative_prop{}
 
-    var isFlagTaken : logic = false
+    var IsFlagTaken : logic = false
 
     OnBegin<override>()<suspends>:void=
         VolumeTrigger.AgentEntersEvent.Subscribe(AttachFlagToPlayer)
 
     AttachFlagToPlayer(Agent : agent):void=
-        if (isFlagTaken?):
+        if (IsFlagTaken?):
+            Print("Flag Already Taken!")
             return
 
         if (Player := player[Agent]):
-            if (FortCharacter := Agent.GetFortCharacter[]):
-                set isFlagTaken = true
-                spawn:
-                    FlagFollowPlayer(FortCharacter)
+            set IsFlagTaken = true
+            spawn:
+                FlagFollowPlayer(Agent)
 
-    FlagFollowPlayer(PlayerToFollow : fort_character)<suspends>:void=
-        AttachedPlayerTranform := PlayerToFollow.GetTransform()
+    FlagFollowPlayer(Agent : agent)<suspends>:void=
         loop:
-            Translation := AttachedPlayerTranform.Translation
-            Rotation := AttachedPlayerTranform.Rotation
-            
-            FlagMesh.MoveTo(Translation + vector3{X := 0.0, Y := 0.0, Z := Translation.Z * 50}, Rotation, 0.0)
+            if (PlayerToFollow := Agent.GetFortCharacter[]):
+                AttachedPlayerTranform := PlayerToFollow.GetTransform()
+                Translation := AttachedPlayerTranform.Translation
+                Rotation := AttachedPlayerTranform.Rotation
+                ForwardVector := Rotation.GetLocalForward()
+                # Offests the flag behind the player and moves it, this does look very ugly though
+                FlagMesh.MoveTo(Translation + ForwardVector * -20.0, Rotation, 0.1)
+    
+    CalculateForwardVector(Angles : vector3)<suspends>:vector3=
+        var ForwardVector : vector3 = vector3{}
+        Roll := Angles.X
+        Pitch := Angles.Y
+        Yaw := Angles.Z
+
+        ForwardX := Cos(Pitch) * Sin(Yaw)
+        ForwardY := -Sin(Pitch)
+        ForwardZ := Cos(Pitch) * Cos(Yaw)
+
+        set ForwardVector = vector3{X := ForwardX,Y := ForwardY,Z:= ForwardZ}
+
+        return ForwardVector
