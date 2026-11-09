@@ -28,5 +28,6 @@
 	"builtInAutoActivate": false,
 	"VerseAPI": 1,
 	"UGCLocalizationTargetName": "Marcus_Thesis",
-	"EnableSceneGraph": true
+	"EnableSceneGraph": true,
+	"EnableSceneGraphAnimation": true
 }

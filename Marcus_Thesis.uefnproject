@@ -59,7 +59,15 @@
 				"bIsSceneGraphSystemAllowed": true,
 				"bEnableOneFilePerEntity": false
 			},
-			"version": 1
+			"version": 1,
+			"sceneGraphAnimation":
+			{
+				"bIsSceneGraphAnimationAllowed": true
+			},
+			"sceneGraphExperimentalFeatures":
+			{
+				"bAreSceneGraphExperimentalFeaturesAllowed": true
+			}
 		}
 	}
 }
