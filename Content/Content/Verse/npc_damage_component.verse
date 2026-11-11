@@ -22,6 +22,8 @@ npc_damage_component<public> := class<final_super>(component):
     var HealthUIRoot : ?entity = false
     var HealthUITransform : ?transform = false
     var LastInstigator : ?entity = false
+    var TimeManager : ?time_manager = false
+    var HitCount : int = 0
 
     var HasBeenDamaged : logic = false
     var HasBeenDamagedBeforeHiddenUI : logic = false
@@ -29,6 +31,19 @@ npc_damage_component<public> := class<final_super>(component):
 
     OnBeginSimulation<override>():void =
         (super:)OnBeginSimulation()
+
+        #Get TimeManager
+        if:
+            SimulationEntity := Entity.GetSimulationEntity[]
+        then:
+            TimeManagerEntities := SimulationEntity.FindDescendantEntitiesWithTag(TimeManagerTag)
+
+                for:
+                    TimeTagged : TimeManagerEntities
+                    TimeComponent := time_manager[TimeTagged]
+                do:
+                    set TimeManager = option{TimeComponent}
+
         set Health = MaxHealth
 
         if (FoundHealthComponent := Entity.GetComponent[health_component]):
@@ -44,7 +59,7 @@ npc_damage_component<public> := class<final_super>(component):
             
         if(HealthComp := HealthComponent?, Widget := HealthUI?):
             if(Pool := HealthComp.GetHealthPool[fort_health_tag]):
-                set Pool.CurrentValue = Health
+                set Health = Pool.CurrentValue
                 set Pool.MaxValue = MaxHealth
             
             set Widget.Health = Health
@@ -56,29 +71,29 @@ npc_damage_component<public> := class<final_super>(component):
         
 
     OnDamaged(HealthAdjustment:health_adjustment_result):void=
+        Print("Damaged Start")
+    
         if(HealthComp := HealthComponent?, Widget := HealthUI?):
             if(Pool := HealthComp.GetHealthPool[fort_health_tag]):
-                set Pool.CurrentValue = Health
+                set Health = Pool.CurrentValue
+                Print("Damaged")
 
             set Widget.Health = Health
             set Widget.Visible = true
             
+            set HitCount += 1
             spawn:
-                TurnOffUIAfterTime(TimeToHideUI)
+                TurnOffUIAfterTime(HitCount)
 
             if(HasBeenDamaged?):
                 set HasBeenDamagedBeforeHiddenUI = true
             else:
                 set HasBeenDamaged = true
             
-    TurnOffUIAfterTime(Time:float)<suspends>: void=
-        Sleep(Time)
-        if(HasBeenDamagedBeforeHiddenUI?):
-            return
-
-        HideHealthUI()
-        set HasBeenDamaged = false
-        set HasBeenDamagedBeforeHiddenUI = false
+    TurnOffUIAfterTime(HitNumber : int)<suspends>: void=
+        Sleep(TimeToHideUI)
+        if(HitCount = HitNumber):
+            HideHealthUI()
 
     OnDeath():void=
         Print("Dead Zombie")
