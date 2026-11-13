@@ -9,7 +9,6 @@ using { /UnrealEngine.com/HealthPipeline }
 using { /Fortnite.com/FortHealthPipeline }
 using {/Verse.org/SceneGraph}
 using {/UnrealEngine.com/Temporary/UI}
-using {/UnrealEngine.com/Temporary/UI}
 using { /Verse.org/SpatialMath }
 
 npc_damage_component<public> := class<final_super>(component):
