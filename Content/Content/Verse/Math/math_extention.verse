@@ -7,15 +7,15 @@ using { /Fortnite.com/Characters }
 
 math_extention<public>:= class():
 
-    GetRotateYTowards<public>(FacingEntity:entity, RootTransform:transform, OffsetDegrees:float):rotation=
-        Direction := (FacingEntity.GetGlobalTransform().Translation - RootTransform.Translation)
+    GetRotateYTowards<public>(TowardsPosition:vector3, RootPosition:vector3, OffsetDegrees:float):rotation=
+        Direction := (TowardsPosition - RootPosition)
                 
         Yaw := RadiansToDegrees(ArcTan(Direction.Left, Direction.Forward)) + OffsetDegrees
         return MakeRotationDegrees(vector3{Up := 1.0}, Yaw)
 
 
-    GetRotateYTowards<public>(FacingEntity:entity, RootTransform:transform):rotation=
-        return GetRotateYTowards(FacingEntity, RootTransform, 90.0)
+    GetRotateYTowards<public>(TowardsPosition:vector3, RootPosition:vector3):rotation=
+        return GetRotateYTowards(TowardsPosition, RootPosition, 90.0)
 
     Normalize<public>(Vector: vector3): vector3 =
         var Result: vector3 = Vector

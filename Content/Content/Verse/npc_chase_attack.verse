@@ -67,7 +67,7 @@ npc_chase_attack<public> := class<final_super>(component):
                     Direction := MathExtention.Normalize((PlayerPosition - ZombiePosition))
                     NewLocation := ZombiePosition + Direction * (RunSpeed * DeltaTime)
                     if(PlayerEnity := entity[Target]):
-                        NewRotation := MathExtention.GetRotateYTowards(FacingEntity := PlayerEnity, RootTransform := ZombieTransform)
+                        NewRotation := MathExtention.GetRotateYTowards(TowardsPosition := PlayerPosition, RootPosition := ZombiePosition)
                     
                         NewTransform := transform{Translation := NewLocation, Rotation := NewRotation, Scale := Entity.GetGlobalTransform().Scale}
                     
