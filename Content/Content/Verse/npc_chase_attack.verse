@@ -37,12 +37,12 @@ npc_chase_attack<public> := class<final_super>(component):
             Print("Got my transform")
             TimeManagerEntities := SimulationEntity.FindCreativeObjectsWithTag(TimeManagerTag)
             Print("Got my time manager entity")
-                for:
-                    TimeTagged : TimeManagerEntities
-                    TimeComponent := time_manager[TimeTagged]
-                do:
-                    set TimeManager = TimeComponent
-                    Print("set time manager")
+            for:
+                TimeTagged : TimeManagerEntities
+                TimeComponent := time_manager[TimeTagged]
+            do:
+                set TimeManager = TimeComponent
+                Print("set time manager")
 
     OnSimulate<override>()<suspends>:void =
         Print("ON Simulate")
