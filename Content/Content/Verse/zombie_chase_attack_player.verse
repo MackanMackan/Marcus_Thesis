@@ -1,3 +1,5 @@
+using { /Verse.org }
+using { /Verse.org/Native }
 using { /Fortnite.com/AI }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Fortnite.com/Characters }
@@ -7,6 +9,9 @@ using { /Verse.org/Assets }
 using { /Verse.org/SceneGraph }
 using { /Verse.org/Simulation }
 using { /Verse.org/SpatialMath }
+using {/invaliddomain/Marcus_Thesis/Content/Verse/tutorial}
+using { /Fortnite.com/Devices }
+
 
 # NPC behavior: chases the closest player using the navigation mesh and attacks in range.
 zombie_chase_attack_player<public> := class(npc_behavior):
@@ -25,6 +30,8 @@ zombie_chase_attack_player<public> := class(npc_behavior):
  
     # Optional attack animation from your own skeleton.
     @editable AttackAnimation:?animation_sequence = false
+
+    var GoldGiverDevice : gold_giver_device = gold_giver_device{}
  
     OnBegin<override>()<suspends>:void =
         if:
@@ -32,8 +39,20 @@ zombie_chase_attack_player<public> := class(npc_behavior):
             Character := Agent.GetFortCharacter[]
             NPCEntity := GetEntity[]
             Actions := NPCEntity.GetComponent[npc_actions_component]
+            SimEntity := Agent.GetSimulationEntity[]
         then:
-            ChaseLoop(Character, Actions)
+            Tagged := SimEntity.FindCreativeObjectsWithTag(GoldGranterDeviceTag)
+
+            for (Obj : Tagged, GoldDevice := gold_giver_device[Obj]):
+                set GoldGiverDevice = GoldDevice
+                
+            # Subscribe to damage and elimination events on this NPC's character.
+            Character.DamagedEvent().Subscribe(OnDamaged)
+            Character.EliminatedEvent().Subscribe(OnEliminated)
+
+            race:
+                ChaseLoop(Character, Actions)
+                Character.EliminatedEvent().Await()
         else:
             Print("zombie_chase_behavior: could not get character or npc_actions_component")
  
@@ -95,3 +114,24 @@ zombie_chase_attack_player<public> := class(npc_behavior):
                 set BestDistance = D
                 set Best = option{Character}
         Best?
+
+    # Runs every time the NPC takes damage.
+    OnDamaged(Result:damage_result):void =
+        Print("NPC took {Result.Amount} damage")
+        if (Instigator := Result.Instigator?, Attacker := Instigator.GetInstigatorAgent[]):
+            if (player[Attacker], Gold := Round[Result.Amount]):
+                GoldGiverDevice.GivePlayerGold(Agent := Attacker, Amount:= Gold)
+                Print("Damage came from a player")
+ 
+    # Runs when the NPC is eliminated.
+    OnEliminated(Result:elimination_result):void =
+        if:
+            Player := Result.EliminatingCharacter?
+            Attacker := Player.GetAgent[]
+            Character := Attacker.GetFortCharacter[]
+            Gold := Round[Character.GetMaxHealth()*0.5]
+        then:
+            GoldGiverDevice.GivePlayerGold(Agent := Attacker, Amount:= Gold)
+            Print("NPC was eliminated by another character")
+        else:
+            Print("NPC was eliminated by the environment")
