@@ -6,3 +6,4 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 
 TimeManagerTag := class(tag):
 GoldGranterDeviceTag := class (tag):
+NpcSpawnerTag := class (tag):
